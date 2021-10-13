@@ -3,22 +3,17 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Paypal\Test\Unit\Model\Config\Rules;
-
-use Magento\Paypal\Model\Config\Rules\Converter;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Class ConverterTest
  *
  * Test for class \Magento\Paypal\Model\Config\Rules\Converter
  */
-class ConverterTest extends TestCase
+class ConverterTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var Converter
+     * @var \Magento\Paypal\Model\Config\Rules\Converter
      */
     protected $converter;
 
@@ -27,9 +22,9 @@ class ConverterTest extends TestCase
      *
      * @return void
      */
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->converter = new Converter();
+        $this->converter = new \Magento\Paypal\Model\Config\Rules\Converter();
     }
 
     /**
@@ -65,7 +60,6 @@ class ConverterTest extends TestCase
                                     'value' => '0',
                                     'predicate' => [
                                     ],
-                                    'include' => '',
                                 ],
                                 'event1' => [
                                     'value' => '1',
@@ -78,7 +72,6 @@ class ConverterTest extends TestCase
                                             'argument2' => 'argument2',
                                         ],
                                     ],
-                                    'include' => '',
                                 ],
                             ],
                         ],
@@ -116,7 +109,6 @@ class ConverterTest extends TestCase
                                 'event0' => [
                                     'value' => '0',
                                     'predicate' => [],
-                                    'include' => '',
                                 ],
                                 'event1' => [
                                     'value' => '1',
@@ -129,7 +121,6 @@ class ConverterTest extends TestCase
                                             'argument2' => 'argument2',
                                         ],
                                     ],
-                                    'include' => '',
                                 ],
                             ],
                         ],

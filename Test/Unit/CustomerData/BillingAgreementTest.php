@@ -3,35 +3,30 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Paypal\Test\Unit\CustomerData;
 
 use Magento\Customer\Helper\Session\CurrentCustomer;
-use Magento\Framework\Escaper;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Paypal\CustomerData\BillingAgreement;
 use Magento\Paypal\Helper\Data;
 use Magento\Paypal\Model\Config;
 use Magento\Paypal\Model\ConfigFactory;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
-class BillingAgreementTest extends TestCase
+class BillingAgreementTest extends \PHPUnit\Framework\TestCase
 {
 
     /**
-     * @var CurrentCustomer|MockObject
+     * @var CurrentCustomer | \PHPUnit_Framework_MockObject_MockObject
      */
     private $currentCustomer;
 
     /**
-     * @var Data|MockObject
+     * @var Data | \PHPUnit_Framework_MockObject_MockObject
      */
     private $paypalData;
 
     /**
-     * @var Config|MockObject
+     * @var Config|\PHPUnit_Framework_MockObject_MockObject
      */
     private $paypalConfig;
 
@@ -40,19 +35,13 @@ class BillingAgreementTest extends TestCase
      */
     private $billingAgreement;
 
-    /**
-     * @var Escaper
-     */
-    private $escaperMock;
-
-    protected function setUp(): void
+    protected function setUp()
     {
-        $helper = new ObjectManager($this);
         $this->paypalConfig = $this->createMock(Config::class);
-        $this->escaperMock = $helper->getObject(Escaper::class);
         $this->paypalConfig
             ->expects($this->once())
-            ->method('setMethod')->willReturnSelf();
+            ->method('setMethod')
+            ->will($this->returnSelf());
 
         $this->paypalConfig->expects($this->once())
             ->method('setMethod')
@@ -61,7 +50,7 @@ class BillingAgreementTest extends TestCase
         $paypalConfigFactory = $this->createPartialMock(ConfigFactory::class, ['create']);
         $paypalConfigFactory->expects($this->once())
             ->method('create')
-            ->willReturn($this->paypalConfig);
+            ->will($this->returnValue($this->paypalConfig));
 
         $customerId = 20;
         $this->currentCustomer = $this->createMock(CurrentCustomer::class);
@@ -70,13 +59,14 @@ class BillingAgreementTest extends TestCase
             ->willReturn($customerId);
 
         $this->paypalData = $this->createMock(Data::class);
+
+        $helper = new ObjectManager($this);
         $this->billingAgreement = $helper->getObject(
             BillingAgreement::class,
             [
                 'paypalConfigFactory' => $paypalConfigFactory,
                 'paypalData' => $this->paypalData,
-                'currentCustomer' => $this->currentCustomer,
-                'escaper' => $this->escaperMock
+                'currentCustomer' => $this->currentCustomer
             ]
         );
     }
@@ -93,10 +83,6 @@ class BillingAgreementTest extends TestCase
         $this->assertArrayHasKey('askToCreate', $result);
         $this->assertArrayHasKey('confirmUrl', $result);
         $this->assertArrayHasKey('confirmMessage', $result);
-        $this->assertEquals(
-            'Would you like to sign a billing agreement to streamline further purchases with PayPal?',
-            $result['confirmMessage']
-        );
         $this->assertTrue($result['askToCreate']);
     }
 

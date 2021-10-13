@@ -3,17 +3,14 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Paypal\Test\Unit\Model\Config\Structure\Element;
 
-use Magento\Config\Model\Config\Structure\Element\Field as FieldConfigStructureMock;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Paypal\Model\Config\Structure\Element\FieldPlugin as FieldConfigStructurePlugin;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
+use Magento\Framework\App\RequestInterface;
+use Magento\Config\Model\Config\Structure\Element\Field as FieldConfigStructureMock;
 
-class FieldPluginTest extends TestCase
+class FieldPluginTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var FieldConfigStructurePlugin
@@ -26,19 +23,27 @@ class FieldPluginTest extends TestCase
     private $objectManagerHelper;
 
     /**
-     * @var FieldConfigStructureMock|MockObject
+     * @var RequestInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $requestMock;
+
+    /**
+     * @var FieldConfigStructureMock|\PHPUnit_Framework_MockObject_MockObject
      */
     private $subjectMock;
 
-    protected function setUp(): void
+    protected function setUp()
     {
+        $this->requestMock = $this->getMockBuilder(RequestInterface::class)
+            ->getMockForAbstractClass();
         $this->subjectMock = $this->getMockBuilder(FieldConfigStructureMock::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->objectManagerHelper = new ObjectManagerHelper($this);
         $this->plugin = $this->objectManagerHelper->getObject(
-            FieldConfigStructurePlugin::class
+            FieldConfigStructurePlugin::class,
+            ['request' => $this->requestMock]
         );
     }
 
@@ -51,9 +56,10 @@ class FieldPluginTest extends TestCase
 
     public function testAroundGetConfigPathNonPaymentSection()
     {
-        $this->subjectMock->expects($this->once())
-            ->method('getPath')
-            ->willReturn('non-payment/group/field');
+        $this->requestMock->expects(static::once())
+            ->method('getParam')
+            ->with('section')
+            ->willReturn('non-payment');
 
         $this->assertNull($this->plugin->afterGetConfigPath($this->subjectMock, null));
     }
@@ -66,7 +72,11 @@ class FieldPluginTest extends TestCase
      */
     public function testAroundGetConfigPath($subjectPath, $expectedConfigPath)
     {
-        $this->subjectMock->expects($this->exactly(2))
+        $this->requestMock->expects(static::once())
+            ->method('getParam')
+            ->with('section')
+            ->willReturn('payment');
+        $this->subjectMock->expects(static::once())
             ->method('getPath')
             ->willReturn($subjectPath);
 

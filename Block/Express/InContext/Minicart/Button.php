@@ -9,6 +9,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Paypal\Model\Config;
 use Magento\Paypal\Model\ConfigFactory;
+use Magento\Paypal\Block\Express\InContext;
 use Magento\Framework\View\Element\Template;
 use Magento\Catalog\Block\ShortcutInterface;
 use Magento\Framework\Locale\ResolverInterface;
@@ -16,7 +17,6 @@ use Magento\Framework\View\Element\Template\Context;
 
 /**
  * Class Button
- * @deprecated 100.3.1 @see \Magento\Paypal\Block\Express\InContext\Minicart\SmartButton
  */
 class Button extends Template implements ShortcutInterface
 {
@@ -59,8 +59,8 @@ class Button extends Template implements ShortcutInterface
      * @param Context $context
      * @param ResolverInterface $localeResolver
      * @param ConfigFactory $configFactory
-     * @param Session $session
      * @param MethodInterface $payment
+     * @param Session $session
      * @param array $data
      */
     public function __construct(
@@ -101,7 +101,8 @@ class Button extends Template implements ShortcutInterface
     }
 
     /**
-     * Check is Paypal In-Context Express Checkout button should render in cart/mini-cart
+     * Check is Paypal In-Context Express Checkout button
+     * should render in cart/mini-cart
      *
      * @return bool
      */
@@ -126,8 +127,6 @@ class Button extends Template implements ShortcutInterface
     }
 
     /**
-     * Returns container id
-     *
      * @return string
      */
     public function getContainerId()
@@ -136,8 +135,6 @@ class Button extends Template implements ShortcutInterface
     }
 
     /**
-     * Returns link action
-     *
      * @return string
      */
     public function getLinkAction()
@@ -146,8 +143,6 @@ class Button extends Template implements ShortcutInterface
     }
 
     /**
-     * Returns add to cart selector
-     *
      * @return string
      */
     public function getAddToCartSelector()
@@ -156,8 +151,6 @@ class Button extends Template implements ShortcutInterface
     }
 
     /**
-     * Returns image url
-     *
      * @return string
      */
     public function getImageUrl()
@@ -178,8 +171,6 @@ class Button extends Template implements ShortcutInterface
     }
 
     /**
-     * Set information if button renders in the mini cart
-     *
      * @param bool $isCatalog
      * @return $this
      */

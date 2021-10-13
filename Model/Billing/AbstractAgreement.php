@@ -6,7 +6,7 @@
 namespace Magento\Paypal\Model\Billing;
 
 /**
- * Billing Agreement abstract class
+ * Billing Agreement abstaract class
  */
 abstract class AbstractAgreement extends \Magento\Framework\Model\AbstractModel
 {

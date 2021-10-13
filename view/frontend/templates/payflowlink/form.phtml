@@ -8,7 +8,6 @@
 
 /**
  * @var \Magento\Paypal\Block\Payflow\Link\Iframe $block
- * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
  * @see \Magento\Paypal\Block\Payflow\Link\Iframe
  */
 ?>
@@ -21,10 +20,8 @@
     <input type="hidden" name="SECURETOKENID" value="<?= $block->escapeHtml($block->getSecureTokenId()) ?>"/>
     <input type="hidden" name="MODE" value="<?= /* @noEscape */ $block->isTestMode() ? 'TEST' : 'LIVE' ?>"/>
 </form>
-<?php $scriptString = <<<script
+<script>
     document.getElementById('token_form').submit();
-script;
-?>
-<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
+</script>
 </body>
 </html>

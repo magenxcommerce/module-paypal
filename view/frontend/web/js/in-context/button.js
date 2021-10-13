@@ -2,51 +2,50 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-define([
-    'uiComponent',
-    'jquery',
-    'Magento_Paypal/js/in-context/express-checkout-wrapper',
-    'Magento_Customer/js/customer-data'
-], function (Component, $, Wrapper, customerData) {
-    'use strict';
+define(
+    [
+        'uiComponent',
+        'jquery',
+        'domReady!'
+    ],
+    function (
+        Component,
+        $
+    ) {
+        'use strict';
 
-    return Component.extend(Wrapper).extend({
-        defaults: {
-            declinePayment: false
-        },
+        return Component.extend({
 
-        /** @inheritdoc */
-        initialize: function (config, element) {
-            var cart = customerData.get('cart'),
-                customer = customerData.get('customer');
+            defaults: {},
 
-            this._super();
-            this.renderPayPalButtons(element);
-            this.declinePayment = !customer().firstname && !cart().isGuestCheckoutAllowed;
+            /**
+             * @returns {Object}
+             */
+            initialize: function () {
+                this._super();
 
-            return this;
-        },
+                return this.initEvents();
+            },
 
-        /** @inheritdoc */
-        beforePayment: function (resolve, reject) {
-            var promise = $.Deferred();
+            /**
+             * @returns {Object}
+             */
+            initEvents: function () {
+                $('a[data-action="' + this.linkDataAction + '"]').off('click.' + this.id)
+                    .on('click.' + this.id, this.click.bind(this));
 
-            if (this.declinePayment) {
-                this.addError(this.signInMessage, 'warning');
+                return this;
+            },
 
-                reject();
-            } else {
-                promise.resolve();
+            /**
+             * @param {Object} event
+             * @returns void
+             */
+            click: function (event) {
+                event.preventDefault();
+
+                $('#' + this.paypalButton).click();
             }
-
-            return promise;
-        },
-
-        /** @inheritdoc */
-        prepareClientConfig: function () {
-            this._super();
-
-            return this.clientConfig;
-        }
-    });
-});
+        });
+    }
+);

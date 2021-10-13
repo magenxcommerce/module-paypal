@@ -3,46 +3,34 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\Paypal\Test\Unit\Model;
 
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Api\ExtensibleDataInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Payment\Observer\AbstractDataAssignObserver;
 use Magento\Paypal\Model\Api\Nvp;
-use Magento\Paypal\Model\Api\ProcessableException;
 use Magento\Paypal\Model\Api\ProcessableException as ApiProcessableException;
 use Magento\Paypal\Model\Express;
-use Magento\Paypal\Model\Express\Checkout;
 use Magento\Paypal\Model\Pro;
-use Magento\Quote\Api\Data\PaymentExtensionInterface;
 use Magento\Quote\Api\Data\PaymentInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use \PHPUnit_Framework_MockObject_MockObject as MockObject;
 
 /**
+ * Class ExpressTest
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class ExpressTest extends TestCase
+class ExpressTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @var string
-     */
-    private static $authorizationExpiredCode = 10601;
-
     /**
      * @var array
      */
-    private $errorCodes = [
+    protected $errorCodes = [
         ApiProcessableException::API_INTERNAL_ERROR,
         ApiProcessableException::API_UNABLE_PROCESS_PAYMENT_ERROR_CODE,
         ApiProcessableException::API_DO_EXPRESS_CHECKOUT_FAIL,
@@ -52,7 +40,7 @@ class ExpressTest extends TestCase
         ApiProcessableException::API_COUNTRY_FILTER_DECLINE,
         ApiProcessableException::API_MAXIMUM_AMOUNT_FILTER_DECLINE,
         ApiProcessableException::API_OTHER_FILTER_DECLINE,
-        ApiProcessableException::API_ADDRESS_MATCH_FAIL,
+        ApiProcessableException::API_ADDRESS_MATCH_FAIL
     ];
 
     /**
@@ -90,13 +78,12 @@ class ExpressTest extends TestCase
      */
     private $eventManager;
 
-    protected function setUp(): void
+    protected function setUp()
     {
-        $this->errorCodes[] = self::$authorizationExpiredCode;
-        $this->checkoutSession = $this->getMockBuilder(Session::class)
-            ->addMethods(['getPaypalTransactionData', 'setPaypalTransactionData'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->checkoutSession = $this->createPartialMock(
+            Session::class,
+            ['getPaypalTransactionData', 'setPaypalTransactionData']
+        );
         $this->transactionBuilder = $this->getMockForAbstractClass(
             BuilderInterface::class,
             [],
@@ -104,65 +91,41 @@ class ExpressTest extends TestCase
             false,
             false
         );
-        $this->nvp = $this->getMockBuilder(Nvp::class)
-            ->addMethods(['setProcessableErrors', 'setAmount', 'setCurrencyCode', 'setTransactionId'])
-            ->onlyMethods(['callDoAuthorization', 'setData'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->nvp = $this->createPartialMock(
+            Nvp::class,
+            [
+                'setProcessableErrors',
+                'setAmount',
+                'setCurrencyCode',
+                'setTransactionId',
+                'callDoAuthorization',
+                'setData',
+            ]
+        );
         $this->pro = $this->createPartialMock(
             Pro::class,
-            ['setMethod', 'getApi', 'importPaymentInfo', 'resetApi', 'void']
+            ['setMethod', 'getApi', 'importPaymentInfo', 'resetApi']
         );
         $this->eventManager = $this->getMockBuilder(ManagerInterface::class)
             ->setMethods(['dispatch'])
             ->getMockForAbstractClass();
 
-        $this->pro->method('getApi')
-            ->willReturn($this->nvp);
+        $this->pro->expects($this->any())->method('getApi')->will($this->returnValue($this->nvp));
         $this->helper = new ObjectManager($this);
     }
 
-    /**
-     * Tests setting the list of processable errors.
-     */
     public function testSetApiProcessableErrors()
     {
         $this->nvp->expects($this->once())->method('setProcessableErrors')->with($this->errorCodes);
 
         $this->model = $this->helper->getObject(
-            Express::class,
+            \Magento\Paypal\Model\Express::class,
             [
                 'data' => [$this->pro],
                 'checkoutSession' => $this->checkoutSession,
                 'transactionBuilder' => $this->transactionBuilder,
             ]
         );
-    }
-
-    /**
-     * Tests canceling order payment when expired authorization generates exception on a client.
-     */
-    public function testCancelWithExpiredAuthorizationTransaction()
-    {
-        $this->pro->method('void')
-            ->willThrowException(
-                new ProcessableException(__('PayPal gateway has rejected request.'), null, 10601)
-            );
-
-        $this->model = $this->helper->getObject(Express::class, ['data' => [$this->pro]]);
-        /** @var Payment|MockObject $paymentModel */
-        $paymentModel = $this->createMock(Payment::class);
-        $paymentModel->expects($this->once())
-            ->method('setTransactionId')
-            ->with(null);
-        $paymentModel->expects($this->once())
-            ->method('setIsTransactionClosed')
-            ->with(true);
-        $paymentModel->expects($this->once())
-            ->method('setShouldCloseParentTransaction')
-            ->with(true);
-
-        $this->model->cancel($paymentModel);
     }
 
     /**
@@ -187,7 +150,7 @@ class ExpressTest extends TestCase
             ->willReturn($order);
 
         $this->model = $this->helper->getObject(
-            Express::class,
+            \Magento\Paypal\Model\Express::class,
             [
                 'data' => [$this->pro],
                 'checkoutSession' => $this->checkoutSession,
@@ -201,17 +164,12 @@ class ExpressTest extends TestCase
         static::assertEquals($this->model, $this->model->order($paymentModel, 12.3));
     }
 
-    /**
-     * Tests data assigning.
-     *
-     * @throws LocalizedException
-     */
     public function testAssignData()
     {
         $transportValue = 'something';
 
         $extensionAttribute = $this->getMockForAbstractClass(
-            PaymentExtensionInterface::class,
+            \Magento\Quote\Api\Data\PaymentExtensionInterface::class,
             [],
             '',
             false,
@@ -221,16 +179,16 @@ class ExpressTest extends TestCase
         $data = new DataObject(
             [
                 PaymentInterface::KEY_ADDITIONAL_DATA => [
-                    Checkout::PAYMENT_INFO_TRANSPORT_BILLING_AGREEMENT => $transportValue,
-                    Checkout::PAYMENT_INFO_TRANSPORT_PAYER_ID => $transportValue,
-                    Checkout::PAYMENT_INFO_TRANSPORT_TOKEN => $transportValue,
-                    ExtensibleDataInterface::EXTENSION_ATTRIBUTES_KEY => $extensionAttribute
+                    Express\Checkout::PAYMENT_INFO_TRANSPORT_BILLING_AGREEMENT => $transportValue,
+                    Express\Checkout::PAYMENT_INFO_TRANSPORT_PAYER_ID => $transportValue,
+                    Express\Checkout::PAYMENT_INFO_TRANSPORT_TOKEN => $transportValue,
+                    \Magento\Framework\Api\ExtensibleDataInterface::EXTENSION_ATTRIBUTES_KEY => $extensionAttribute
                 ]
             ]
         );
 
         $this->model = $this->helper->getObject(
-            Express::class,
+            \Magento\Paypal\Model\Express::class,
             [
                 'data' => [$this->pro],
                 'checkoutSession' => $this->checkoutSession,
@@ -239,7 +197,7 @@ class ExpressTest extends TestCase
             ]
         );
 
-        $paymentInfo = $this->getMockForAbstractClass(InfoInterface::class);
+        $paymentInfo = $this->createMock(InfoInterface::class);
         $this->model->setInfoInstance($paymentInfo);
 
         $this->parentAssignDataExpectation($data);
@@ -247,9 +205,9 @@ class ExpressTest extends TestCase
         $paymentInfo->expects(static::exactly(3))
             ->method('setAdditionalInformation')
             ->withConsecutive(
-                [Checkout::PAYMENT_INFO_TRANSPORT_BILLING_AGREEMENT, $transportValue],
-                [Checkout::PAYMENT_INFO_TRANSPORT_PAYER_ID, $transportValue],
-                [Checkout::PAYMENT_INFO_TRANSPORT_TOKEN, $transportValue]
+                [Express\Checkout::PAYMENT_INFO_TRANSPORT_BILLING_AGREEMENT, $transportValue],
+                [Express\Checkout::PAYMENT_INFO_TRANSPORT_PAYER_ID, $transportValue],
+                [Express\Checkout::PAYMENT_INFO_TRANSPORT_TOKEN, $transportValue]
             );
 
         $this->model->assignData($data);

@@ -1,0 +1,43 @@
+{
+    "name": "magenxcommerce/module-paypal",
+    "description": "N/A",
+    "require": {
+        "php": "~5.6.5|7.0.2|7.0.4|~7.0.6|~7.1.0",
+        "magenxcommerce/module-config": "100.1.*",
+        "magenxcommerce/module-store": "100.1.*",
+        "magenxcommerce/module-checkout": "100.1.*",
+        "magenxcommerce/module-sales": "100.1.*",
+        "magenxcommerce/module-quote": "100.1.*",
+        "magenxcommerce/module-customer": "100.1.*",
+        "magenxcommerce/module-payment": "100.1.*",
+        "magenxcommerce/module-backend": "100.1.*",
+        "magenxcommerce/module-tax": "100.1.*",
+        "magenxcommerce/module-directory": "100.1.*",
+        "magenxcommerce/module-theme": "100.1.*",
+        "magenxcommerce/module-catalog": "101.0.*",
+        "magenxcommerce/module-eav": "100.1.*",
+        "magenxcommerce/framework": "100.1.*",
+        "magenxcommerce/module-ui": "100.1.*",
+        "magenxcommerce/module-vault": "100.2.*",
+        "lib-libxml": "*"
+    },
+    "suggest": {
+        "magenxcommerce/module-checkout-agreements": "100.1.*"
+    },
+    "type": "magento2-module",
+    "version": "100.1.14",
+    "license": [
+        "proprietary"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magento\\Paypal\\": ""
+        }
+    },
+    "replace": {
+        "magento/module-paypal": "*"
+    }
+}
